@@ -44,6 +44,22 @@ func Parse(b []byte) (Meta, error) {
 	return Meta{}, errors.New("SKILL.md: unterminated frontmatter")
 }
 
+// Body returns the markdown body after the frontmatter block, or the whole
+// input when no frontmatter is present.
+func Body(b []byte) string {
+	s := strings.ReplaceAll(string(b), "\r\n", "\n")
+	lines := strings.Split(s, "\n")
+	if len(lines) == 0 || strings.TrimSpace(lines[0]) != "---" {
+		return s
+	}
+	for i := 1; i < len(lines); i++ {
+		if strings.TrimSpace(lines[i]) == "---" {
+			return strings.TrimLeft(strings.Join(lines[i+1:], "\n"), "\n")
+		}
+	}
+	return s
+}
+
 // Load reads and parses dir/SKILL.md.
 func Load(dir string) (Meta, error) {
 	b, err := os.ReadFile(filepath.Join(dir, "SKILL.md"))

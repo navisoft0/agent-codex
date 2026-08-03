@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/navisoft0/agent-codex/internal/adapters"
 	"github.com/navisoft0/agent-codex/internal/fsutil"
 	"github.com/navisoft0/agent-codex/internal/hashdir"
 	"github.com/navisoft0/agent-codex/internal/lockfile"
@@ -20,15 +22,29 @@ func runAdd(args []string) int {
 	fs := flag.NewFlagSet("add", flag.ContinueOnError)
 	from := fs.String("from", "", "upstream source: git URL or local path (required)")
 	to := fs.String("to", "", "install dir relative to repo root (default .claude/skills/<skill>)")
+	surfacesFlag := fs.String("surfaces", adapters.Primary,
+		"comma-separated surfaces to project into: "+strings.Join(adapters.Names(), ", "))
 	pos, err := parse(fs, args)
 	if err != nil {
 		return 2
 	}
 	if len(pos) != 1 || *from == "" {
-		fmt.Fprintln(os.Stderr, "usage: acx add <skill> --from <source> [--to <dir>]")
+		fmt.Fprintln(os.Stderr, "usage: acx add <skill> --from <source> [--to <dir>] [--surfaces <list>]")
 		return 2
 	}
 	name := pos[0]
+
+	var surfaces []string
+	for _, s := range strings.Split(*surfacesFlag, ",") {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		if !adapters.Known(s) {
+			return fail(fmt.Errorf("unknown surface %q (known: %s)", s, strings.Join(adapters.Names(), ", ")))
+		}
+		surfaces = append(surfaces, s)
+	}
 
 	root, err := repoRoot()
 	if err != nil {
@@ -67,12 +83,14 @@ func runAdd(args []string) int {
 	if err != nil {
 		return fail(err)
 	}
-	lf.Skills[name] = lockfile.Entry{
-		Source:  *from,
-		Version: meta.Version,
-		Hash:    hash,
-		Path:    filepath.ToSlash(rel),
+	entry := lockfile.Entry{
+		Source:   *from,
+		Version:  meta.Version,
+		Hash:     hash,
+		Path:     filepath.ToSlash(rel),
+		Surfaces: surfaces,
 	}
+	lf.Skills[name] = entry
 	if err := lf.Save(root); err != nil {
 		return fail(err)
 	}
@@ -81,6 +99,13 @@ func runAdd(args []string) int {
 		fmt.Printf("added %s@%s -> %s (%s)\n", name, meta.Version, rel, short(hash))
 	} else {
 		fmt.Printf("added %s -> %s (%s)\n", name, rel, short(hash))
+	}
+	written, err := projectSkill(root, name, entry)
+	if err != nil {
+		return fail(err)
+	}
+	for _, p := range written {
+		fmt.Printf("projected -> %s\n", p)
 	}
 	fmt.Println("commit skills.lock and " + lockfile.AncestorsDir + "/ so drift stays computable on every checkout")
 	return 0

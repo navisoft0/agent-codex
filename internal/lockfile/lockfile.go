@@ -29,6 +29,9 @@ type Entry struct {
 	Hash string `json:"hash"`
 	// Path is the install location relative to the repo root, slash-separated.
 	Path string `json:"path"`
+	// Surfaces lists the agent surfaces this skill is projected into. Empty
+	// means just the primary (claude-code) working copy.
+	Surfaces []string `json:"surfaces,omitempty"`
 }
 
 // File is the parsed lockfile.

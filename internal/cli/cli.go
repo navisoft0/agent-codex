@@ -10,13 +10,18 @@ import (
 	"github.com/navisoft0/agent-codex/internal/lockfile"
 )
 
-const usage = `acx — agent-skills sync & governance CLI (M0 spike)
+const usage = `acx — agent-skills sync & governance CLI
 
 Usage:
   acx init                          Scaffold a canonical upstream skills repo
   acx add <skill> --from <source>   Install a skill from an upstream (git URL or local path)
+                 [--surfaces list]    surfaces: claude-code, codex, cursor, agents-md, claude-md
   acx status [--json] [--offline]   Drift report; exit 1 if anything is not aligned
   acx diff <skill> [--latest]       Diff working copy vs ancestor (--latest: ancestor vs upstream)
+  acx update [<skill>...]           Pull upstream changes: fast-forward or 3-way merge that
+                                      preserves local edits; exit 1 on conflicts
+  acx verify [--json]               Fail unless working tree and snapshots match skills.lock
+  acx project [<skill>...]          (Re)render skills into their configured surfaces
 
 Drift states: aligned · behind · drifted · diverged · missing
 `
@@ -36,6 +41,12 @@ func Run(args []string) int {
 		return runStatus(args[1:])
 	case "diff":
 		return runDiff(args[1:])
+	case "update":
+		return runUpdate(args[1:])
+	case "verify":
+		return runVerify(args[1:])
+	case "project":
+		return runProject(args[1:])
 	case "help", "-h", "--help":
 		fmt.Print(usage)
 		return 0
