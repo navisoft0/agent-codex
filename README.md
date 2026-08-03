@@ -6,9 +6,10 @@ skills repo as *upstream* and manages the loop between it and a fleet of
 consuming repos — eval-gated propagation, drift detection, 3-way merge, and a
 contribution-back path for edge learnings. The full design is in [PLAN.md](PLAN.md).
 
-**Status: M1 ("Copier for skills").** The lockfile + ancestor-snapshot engine,
-drift detection, 3-way-merge updates, tamper verification, and multi-surface
-projection all work against a git or local-path upstream.
+**Status: M2 ("Renovate for skills").** The lockfile + ancestor-snapshot
+engine, drift detection, 3-way-merge updates, tamper verification,
+multi-surface projection, eval-gated fleet propagation, and the
+contribution-back harvest all work against a git or local-path upstream.
 
 ## Install
 
@@ -47,7 +48,33 @@ acx update
 
 acx verify                           # CI gate: working tree + snapshots match skills.lock
 acx project                          # re-render surfaces after hand edits or resolution
+
+acx eval deploy-checklist            # run the skill's suite (promptfoo-compatible)
+acx eval deploy-checklist --scaffold # generate a starter suite for a skill without one
+
+acx harvest deploy-checklist --push  # local drift -> attributed branch on the upstream
+# open a PR: https://github.com/your-org/skills/compare/acx/harvest/deploy-checklist?expand=1
 ```
+
+In the canonical repo, to fan updates out (locally or from CI — see
+`docs/github-action-example.yml`):
+
+```sh
+echo '{"repos": ["git@github.com:org/app-a.git", "git@github.com:org/app-b.git"]}' > fleet.json
+acx propagate --push
+# === git@github.com:org/app-a.git ===
+# deploy-checklist: fast-forwarded 1.4.0 -> 1.5.0
+# eval deploy-checklist: 12 passed, 0 failed
+# pushed acx/skills-update
+# open a PR: https://github.com/org/app-a/compare/acx/skills-update?expand=1
+```
+
+`propagate` clones each fleet repo, runs the same merge engine `update` uses,
+then gates on evals: a repo whose suite fails (or whose merge conflicts) is
+reported and skipped, its working clone kept for inspection — nothing ships
+that regresses the suite, and nothing merges without review. `harvest` is the
+loop's other direction: edge learnings travel upstream as ordinary PRs with
+the consuming repo, ancestor version, and author recorded in the commit.
 
 Commit `skills.lock` and `.agent-codex/ancestors/` — they are the state that
 makes drift computable on any checkout, offline, and the ancestor snapshots
@@ -99,11 +126,13 @@ upstream refresh and compares against last-synced content only.
 
 ```
 cmd/acx/            entry point
-internal/cli/       command implementations (init, add, status, diff, update, verify, project)
+internal/cli/       command implementations (init, add, status, diff, update,
+                    verify, project, eval, harvest, propagate)
 internal/lockfile/  skills.lock + ancestor snapshot locations
 internal/drift/     the five-state drift resolver
 internal/merge/     file-level 3-way merge (ancestor as base, conflict markers on overlap)
 internal/adapters/  surface adapters: codex, cursor, agents-md, claude-md
+internal/evals/     promptfoo-compatible runner integration + suite scaffolding
 internal/hashdir/   deterministic directory content hashing
 internal/upstream/  source resolution (local path or cached git clone)
 internal/skillmeta/ SKILL.md frontmatter parsing
@@ -111,6 +140,7 @@ internal/skillmeta/ SKILL.md frontmatter parsing
 
 ## Roadmap
 
-M0+M1 (this) → M2 eval gate + fleet propagation (`eval`, `propagate`,
-`harvest`) → M3 contribution-back reconciliation → M4 governance. See
+M0–M2 (this) → M3 contribution-back reconciliation (clustering overlapping
+harvests, LLM-assisted merge proposals, fleet drift dashboards) → M4
+governance (approval workflows, signing/provenance, audit). See
 [PLAN.md](PLAN.md).

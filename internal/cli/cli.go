@@ -22,6 +22,10 @@ Usage:
                                       preserves local edits; exit 1 on conflicts
   acx verify [--json]               Fail unless working tree and snapshots match skills.lock
   acx project [<skill>...]          (Re)render skills into their configured surfaces
+  acx eval <skill> [--scaffold]     Run the skill's eval suite via a promptfoo-compatible runner
+  acx harvest <skill> [--push]      Package local drift as an attributed branch against upstream
+  acx propagate [--push]            Fleet fan-out: update every fleet.json repo, gate on evals,
+                                      prepare (or push) a PR branch per repo
 
 Drift states: aligned · behind · drifted · diverged · missing
 `
@@ -47,6 +51,12 @@ func Run(args []string) int {
 		return runVerify(args[1:])
 	case "project":
 		return runProject(args[1:])
+	case "eval":
+		return runEval(args[1:])
+	case "harvest":
+		return runHarvest(args[1:])
+	case "propagate":
+		return runPropagate(args[1:])
 	case "help", "-h", "--help":
 		fmt.Print(usage)
 		return 0

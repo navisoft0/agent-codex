@@ -33,6 +33,12 @@ func runUpdate(args []string) int {
 	if err != nil {
 		return fail(err)
 	}
+	return updateAt(root, pos)
+}
+
+// updateAt runs the update engine against an explicit repo root, so
+// propagate can drive it inside fleet clones.
+func updateAt(root string, pos []string) int {
 	lf, err := lockfile.Load(root)
 	if err != nil {
 		return fail(err)

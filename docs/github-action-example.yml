@@ -1,0 +1,34 @@
+# Example: eval-gated skill propagation from a canonical skills repo.
+# Place in .github/workflows/propagate.yml of the canonical upstream.
+#
+# On every push to main (a skill release), acx clones each repo in
+# fleet.json, applies updates with the 3-way merge, runs each skill's eval
+# suite as a gate, and pushes a PR-ready branch. Repos with conflicts or
+# failing evals are reported in the job log and skipped — nothing merges
+# without review.
+name: propagate-skills
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  propagate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Install acx
+        run: go install github.com/navisoft0/agent-codex/cmd/acx@latest
+      - name: Propagate to fleet
+        env:
+          # A token with push access to the fleet repos, used by git via the
+          # URL scheme in fleet.json (e.g. https://x-access-token:${TOKEN}@github.com/org/app.git)
+          GH_TOKEN: ${{ secrets.FLEET_PUSH_TOKEN }}
+          # Optional: enables the eval gate. Without it the gate is skipped
+          # with a notice for skills that ship suites.
+          ACX_EVAL_RUNNER: npx --yes promptfoo@latest
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: acx propagate --push
