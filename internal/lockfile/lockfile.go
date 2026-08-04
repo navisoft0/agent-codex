@@ -32,6 +32,10 @@ type Entry struct {
 	// Surfaces lists the agent surfaces this skill is projected into. Empty
 	// means just the primary (claude-code) working copy.
 	Surfaces []string `json:"surfaces,omitempty"`
+	// Constraint bounds which upstream versions update may move to: "" or
+	// "latest" (float), "1.4.0" (exact), "^1.4" (same major, >=), or a
+	// "sha256:..." content pin (never moves until the pin is edited).
+	Constraint string `json:"constraint,omitempty"`
 }
 
 // File is the parsed lockfile.

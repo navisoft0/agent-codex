@@ -11,6 +11,7 @@ import (
 	"github.com/navisoft0/agent-codex/internal/fsutil"
 	"github.com/navisoft0/agent-codex/internal/hashdir"
 	"github.com/navisoft0/agent-codex/internal/lockfile"
+	"github.com/navisoft0/agent-codex/internal/semver"
 	"github.com/navisoft0/agent-codex/internal/skillmeta"
 	"github.com/navisoft0/agent-codex/internal/upstream"
 )
@@ -24,15 +25,19 @@ func runAdd(args []string) int {
 	to := fs.String("to", "", "install dir relative to repo root (default .claude/skills/<skill>)")
 	surfacesFlag := fs.String("surfaces", adapters.Primary,
 		"comma-separated surfaces to project into: "+strings.Join(adapters.Names(), ", "))
+	pin := fs.Bool("pin", false, "pin the exact content hash (updates hold until the pin is edited)")
 	pos, err := parse(fs, args)
 	if err != nil {
 		return 2
 	}
 	if len(pos) != 1 || *from == "" {
-		fmt.Fprintln(os.Stderr, "usage: acx add <skill> --from <source> [--to <dir>] [--surfaces <list>]")
+		fmt.Fprintln(os.Stderr, "usage: acx add <skill>[@constraint] --from <source> [--to <dir>] [--surfaces <list>] [--pin]")
 		return 2
 	}
-	name := pos[0]
+	name, constraint, _ := strings.Cut(pos[0], "@")
+	if *pin && constraint != "" {
+		return fail(fmt.Errorf("--pin and @%s are mutually exclusive: a pin is an exact content hash", constraint))
+	}
 
 	var surfaces []string
 	for _, s := range strings.Split(*surfacesFlag, ",") {
@@ -78,17 +83,25 @@ func runAdd(args []string) int {
 		return fail(err)
 	}
 	meta, _ := skillmeta.Load(src) // a missing version is allowed; the hash is authoritative
+	if constraint != "" && !semver.Satisfies(meta.Version, constraint) {
+		return fail(fmt.Errorf("upstream %s is at %s, which does not satisfy @%s",
+			name, versionOr(meta.Version, "an unversioned state"), constraint))
+	}
+	if *pin {
+		constraint = hash
+	}
 
 	lf, err := lockfile.Load(root)
 	if err != nil {
 		return fail(err)
 	}
 	entry := lockfile.Entry{
-		Source:   *from,
-		Version:  meta.Version,
-		Hash:     hash,
-		Path:     filepath.ToSlash(rel),
-		Surfaces: surfaces,
+		Source:     *from,
+		Version:    meta.Version,
+		Hash:       hash,
+		Path:       filepath.ToSlash(rel),
+		Surfaces:   surfaces,
+		Constraint: constraint,
 	}
 	lf.Skills[name] = entry
 	if err := lf.Save(root); err != nil {
@@ -107,6 +120,7 @@ func runAdd(args []string) int {
 	for _, p := range written {
 		fmt.Printf("projected -> %s\n", p)
 	}
+	scanNotice(name, src)
 	fmt.Println("commit skills.lock and " + lockfile.AncestorsDir + "/ so drift stays computable on every checkout")
 	return 0
 }

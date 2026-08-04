@@ -6,10 +6,14 @@ skills repo as *upstream* and manages the loop between it and a fleet of
 consuming repos — eval-gated propagation, drift detection, 3-way merge, and a
 contribution-back path for edge learnings. The full design is in [PLAN.md](PLAN.md).
 
-**Status: M2 ("Renovate for skills").** The lockfile + ancestor-snapshot
-engine, drift detection, 3-way-merge updates, tamper verification,
-multi-surface projection, eval-gated fleet propagation, and the
-contribution-back harvest all work against a git or local-path upstream.
+**Status: full CLI surface realized (M0–M3 + the CLI half of M4).** The
+lockfile + ancestor-snapshot engine, drift detection, 3-way-merge updates
+with version constraints and content pins, tamper verification, security
+scanning, multi-surface projection, eval-gated fleet propagation, the
+contribution-back harvest with reconciliation, fleet drift reporting, and the
+content-level audit log all work against a git or local-path upstream. What
+remains of the plan is the hosted control plane (approval workflows, signing,
+org dashboards) — everything a single binary can do is here.
 
 ## Install
 
@@ -28,11 +32,13 @@ acx init          # scaffolds skills/example-skill/{SKILL.md,evals/}
 In a consuming repo:
 
 ```sh
-acx add deploy-checklist --from git@github.com:your-org/skills.git \
+acx add deploy-checklist@^1.4 --from git@github.com:your-org/skills.git \
         --surfaces claude-code,codex,agents-md
 # added deploy-checklist@1.4.0 -> .claude/skills/deploy-checklist (sha256:...)
 # projected -> .codex/skills/deploy-checklist
 # projected -> AGENTS.md
+# (@^1.4 floats within the major; @1.4.0 pins the version; --pin pins the
+#  exact content hash for security-sensitive fleets)
 
 acx status
 # SKILL             STATE    VERSION  PATH
@@ -75,6 +81,19 @@ reported and skipped, its working clone kept for inspection — nothing ships
 that regresses the suite, and nothing merges without review. `harvest` is the
 loop's other direction: edge learnings travel upstream as ordinary PRs with
 the consuming repo, ancestor version, and author recorded in the commit.
+
+Maintainer and governance tooling in the canonical repo:
+
+```sh
+acx status --fleet        # drift heat-map data: every repo x skill, --json for dashboards
+acx reconcile             # cluster acx/harvest/* branches; flag overlapping learnings
+                          #   (block-level: edits within ±2 lines of the same base region)
+acx scan                  # prompt-injection / payload heuristics + $ACX_SCAN_CMD hook;
+                          #   also runs automatically as a warning on add/update
+acx audit deploy-checklist  # content-level change log: who changed what prose, when
+acx update --ai-merge     # conflicts get an AI-proposed resolution in <file>.proposal
+                          #   via $ACX_AI_MERGE_CMD — proposed, never auto-applied
+```
 
 Commit `skills.lock` and `.agent-codex/ancestors/` — they are the state that
 makes drift computable on any checkout, offline, and the ancestor snapshots
@@ -126,13 +145,15 @@ upstream refresh and compares against last-synced content only.
 
 ```
 cmd/acx/            entry point
-internal/cli/       command implementations (init, add, status, diff, update,
-                    verify, project, eval, harvest, propagate)
+internal/cli/       command implementations (init, add, status, diff, update, verify,
+                    project, eval, harvest, propagate, reconcile, scan, audit)
 internal/lockfile/  skills.lock + ancestor snapshot locations
 internal/drift/     the five-state drift resolver
 internal/merge/     file-level 3-way merge (ancestor as base, conflict markers on overlap)
 internal/adapters/  surface adapters: codex, cursor, agents-md, claude-md
 internal/evals/     promptfoo-compatible runner integration + suite scaffolding
+internal/scan/      supply-chain heuristics (prompt injection, exec payloads)
+internal/semver/    constraint arithmetic (exact, caret, content pins)
 internal/hashdir/   deterministic directory content hashing
 internal/upstream/  source resolution (local path or cached git clone)
 internal/skillmeta/ SKILL.md frontmatter parsing
@@ -140,7 +161,8 @@ internal/skillmeta/ SKILL.md frontmatter parsing
 
 ## Roadmap
 
-M0–M2 (this) → M3 contribution-back reconciliation (clustering overlapping
-harvests, LLM-assisted merge proposals, fleet drift dashboards) → M4
-governance (approval workflows, signing/provenance, audit). See
-[PLAN.md](PLAN.md).
+The CLI surface from [PLAN.md](PLAN.md) §5 is fully implemented. What remains
+is the phase-2 control plane: hosted approval workflows, sigstore
+signing/provenance, org dashboards over `status --fleet --json`, and
+commercial packaging — plus dogfooding against a real fleet before v0.1 is
+tagged.

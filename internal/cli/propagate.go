@@ -19,6 +19,18 @@ type fleetManifest struct {
 	Repos []string `json:"repos"`
 }
 
+func loadFleet(root, manifestPath string) (fleetManifest, error) {
+	var m fleetManifest
+	b, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(manifestPath)))
+	if err != nil {
+		return m, fmt.Errorf("no fleet manifest: %v (create %s with {\"repos\": [\"<path-or-git-url>\", ...]})", err, manifestPath)
+	}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return m, fmt.Errorf("parse %s: %v", manifestPath, err)
+	}
+	return m, nil
+}
+
 // runPropagate is the fleet fan-out: clone every repo in fleet.json, run the
 // same update engine inside each clone, gate on evals when a runner is
 // available, and turn clean results into a branch (pushed with --push) ready
@@ -38,13 +50,9 @@ func runPropagate(args []string) int {
 	if err != nil {
 		return fail(err)
 	}
-	b, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(*manifestPath)))
+	m, err := loadFleet(root, *manifestPath)
 	if err != nil {
-		return fail(fmt.Errorf("no fleet manifest: %v (create %s with {\"repos\": [\"<path-or-git-url>\", ...]})", err, *manifestPath))
-	}
-	var m fleetManifest
-	if err := json.Unmarshal(b, &m); err != nil {
-		return fail(fmt.Errorf("parse %s: %v", *manifestPath, err))
+		return fail(err)
 	}
 	if len(m.Repos) == 0 {
 		fmt.Println("fleet manifest lists no repos")
@@ -70,7 +78,7 @@ func runPropagate(args []string) int {
 			continue
 		}
 
-		code := updateAt(clone, nil)
+		code := updateAt(clone, nil, false)
 		if out, serr := git(clone, "status", "--porcelain"); serr != nil {
 			return fail(serr)
 		} else if strings.TrimSpace(out) == "" {

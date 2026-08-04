@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -13,9 +15,46 @@ import (
 	"github.com/navisoft0/agent-codex/internal/hashdir"
 	"github.com/navisoft0/agent-codex/internal/lockfile"
 	"github.com/navisoft0/agent-codex/internal/merge"
+	"github.com/navisoft0/agent-codex/internal/semver"
 	"github.com/navisoft0/agent-codex/internal/skillmeta"
 	"github.com/navisoft0/agent-codex/internal/upstream"
 )
+
+// EnvAIMerge names a command that reads a conflict-marked file on stdin and
+// writes a proposed resolution to stdout (e.g. a claude or llm CLI
+// invocation). Proposals land next to the conflicted file as <file>.proposal
+// — acx never applies them itself; the human merges the proposal or not.
+const EnvAIMerge = "ACX_AI_MERGE_CMD"
+
+// proposeResolutions runs the configured proposer over each conflicted file.
+func proposeResolutions(wdir, skill string, conflicts []string) {
+	cmdline := strings.Fields(os.Getenv(EnvAIMerge))
+	if len(cmdline) == 0 {
+		fmt.Fprintf(os.Stderr, "acx: --ai-merge: $%s is not set; point it at a proposer command "+
+			"(reads the conflicted file on stdin, writes a proposal to stdout)\n", EnvAIMerge)
+		return
+	}
+	for _, rel := range conflicts {
+		path := filepath.Join(wdir, rel)
+		content, err := os.ReadFile(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "acx: --ai-merge: %v\n", err)
+			continue
+		}
+		cmd := exec.Command(cmdline[0], cmdline[1:]...)
+		cmd.Stdin = bytes.NewReader(content)
+		out, err := cmd.Output()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "acx: --ai-merge: proposer failed for %s: %v\n", rel, err)
+			continue
+		}
+		if err := os.WriteFile(path+".proposal", out, 0o644); err != nil {
+			fmt.Fprintf(os.Stderr, "acx: --ai-merge: %v\n", err)
+			continue
+		}
+		fmt.Printf("%s: AI proposal written to %s.proposal — review and apply manually\n", skill, rel)
+	}
+}
 
 // runUpdate pulls upstream changes into the working copy. Behind fast-forwards
 // cleanly; diverged goes through the 3-way merge with the ancestor snapshot as
@@ -24,6 +63,8 @@ import (
 // resolution reads as local customization of the new base.
 func runUpdate(args []string) int {
 	fs := flag.NewFlagSet("update", flag.ContinueOnError)
+	aiMerge := fs.Bool("ai-merge", false,
+		"on conflicts, ask $"+EnvAIMerge+" for a proposed resolution written to <file>.proposal (never auto-applied)")
 	pos, err := parse(fs, args)
 	if err != nil {
 		return 2
@@ -33,12 +74,12 @@ func runUpdate(args []string) int {
 	if err != nil {
 		return fail(err)
 	}
-	return updateAt(root, pos)
+	return updateAt(root, pos, *aiMerge)
 }
 
 // updateAt runs the update engine against an explicit repo root, so
 // propagate can drive it inside fleet clones.
-func updateAt(root string, pos []string) int {
+func updateAt(root string, pos []string, aiMerge bool) int {
 	lf, err := lockfile.Load(root)
 	if err != nil {
 		return fail(err)
@@ -98,6 +139,19 @@ func updateAt(root string, pos []string) int {
 
 		meta, _ := skillmeta.Load(sdir)
 		oldVersion := e.Version
+
+		// Constraint gate: a held-back skill is expected state, not an error.
+		if strings.HasPrefix(e.Constraint, "sha256:") {
+			if latestHash != e.Constraint {
+				fmt.Printf("%s: pinned at %s; upstream moved to %s — edit the pin in %s to move\n",
+					name, short(e.Constraint), short(latestHash), lockfile.Name)
+				continue
+			}
+		} else if e.Constraint != "" && !semver.Satisfies(meta.Version, e.Constraint) {
+			fmt.Printf("%s: held back — upstream %s does not satisfy @%s (edit the constraint in %s to move)\n",
+				name, versionOr(meta.Version, short(latestHash)), e.Constraint, lockfile.Name)
+			continue
+		}
 		sync := func() error {
 			if err := fsutil.CopyDir(sdir, ancDir); err != nil {
 				return err
@@ -144,6 +198,9 @@ func updateAt(root string, pos []string) int {
 				exit = 1
 				fmt.Printf("%s: merged %s, conflicts in: %s — resolve the <<<<<<< markers, then commit\n",
 					name, versionOr(meta.Version, short(latestHash)), strings.Join(conflicts, ", "))
+				if aiMerge {
+					proposeResolutions(wdir, name, conflicts)
+				}
 			} else {
 				fmt.Printf("%s: merged %s cleanly, local edits preserved\n",
 					name, versionOr(meta.Version, short(latestHash)))
@@ -157,6 +214,7 @@ func updateAt(root string, pos []string) int {
 		for _, p := range written {
 			fmt.Printf("%s: projected -> %s\n", name, p)
 		}
+		scanNotice(name, wdir)
 	}
 
 	if err := lf.Save(root); err != nil {
