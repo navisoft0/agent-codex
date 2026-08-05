@@ -12,20 +12,52 @@
   <a href=".github/workflows/ci.yml"><img src="https://github.com/navisoft0/agent-codex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
-`acx` is a CLI for syncing and governing AI agent skills across repos and agent
-surfaces. It is not a registry and not a marketplace: it treats one canonical
-skills repo as *upstream* and manages the loop between it and a fleet of
-consuming repos — eval-gated propagation, drift detection, 3-way merge, and a
-contribution-back path for edge learnings. The full design is in [PLAN.md](PLAN.md).
+## What is this?
 
-**Status: full CLI surface realized (M0–M3 + the CLI half of M4).** The
-lockfile + ancestor-snapshot engine, drift detection, 3-way-merge updates
-with version constraints and content pins, tamper verification, security
-scanning, multi-surface projection, eval-gated fleet propagation, the
-contribution-back harvest with reconciliation, fleet drift reporting, and the
-content-level audit log all work against a git or local-path upstream. What
-remains of the plan is the hosted control plane (approval workflows, signing,
-org dashboards) — everything a single binary can do is here.
+You write **skills** — instruction files that teach AI agents (Claude Code,
+Codex, Cursor…) how to do things your way. They're good, so they get copied
+into other projects and shared with teammates. And from that moment, every
+copy lives its own life: one person fixes something and nobody else gets the
+fix, another copy quietly goes stale, and soon there are six versions of "the"
+skill and no one knows which is right.
+
+`acx` fixes that. You keep your skills in one ordinary git repo — **the
+library** — and acx manages every copy pulled from it:
+
+- **See where you stand** — `acx status` tells each project whether its copies
+  are current, behind, or locally customized.
+- **Update without losing your tweaks** — `acx update` pulls in the library's
+  improvements and merges them *around* your local edits. When both changed
+  the same line, it stops and shows you both versions instead of guessing.
+- **Send improvements home** — `acx harvest` turns a local fix into a normal
+  pull request on the library, credited to you, for the maintainer to review.
+  Lessons stop dying in one project's folder.
+- **One skill, every tool** — a single source copy is auto-formatted for
+  Claude Code, Codex, Cursor, and `AGENTS.md`/`CLAUDE.md`.
+
+No server, no accounts, no new place to put your files — just a small binary
+plus the git repos you already have. New to all this? Read
+**[docs/CONCEPTS.md](docs/CONCEPTS.md)** — the plain-English tour — or run the
+five-minute sandbox demo: `bash docs/demo.sh`.
+
+## The design in 90 seconds (for engineers)
+
+acx treats one canonical skills repo as *upstream* and manages the loop
+between it and a fleet of consuming repos. It is not a registry and not a
+marketplace. The mechanism: installs are vendored alongside a lockfile
+(`skills.lock`) **and a committed snapshot of exactly what was received** —
+the ancestor that makes drift computable offline and gives `update` a true
+3-way merge base, so local customization survives every sync. On top of that
+engine: version constraints and content-hash pins, eval-gated fleet
+propagation (Renovate-style update PRs that must pass each skill's promptfoo
+suite), harvest/reconcile for the contribution-back direction, and a
+governance layer (verify, scan, audit). Everything ships in the repos as
+plain files; every mutation is a git commit or a PR. Full design rationale:
+[PLAN.md](PLAN.md) (the original strategy document — reads like one).
+
+**Status: v0.1.0 — the complete planned CLI surface, working.** What remains
+is the hosted control plane (approval workflows, signing, dashboards);
+everything a single binary can do is here.
 
 ## Install
 
@@ -40,9 +72,6 @@ a single self-contained binary you can hand to teammates directly:
 ```sh
 go build -o acx ./cmd/acx    # Go 1.24+, no other dependencies
 ```
-
-New here? `bash docs/demo.sh` plays the whole lifecycle out in a throwaway
-sandbox in about five minutes.
 
 ## Quickstart
 
@@ -125,8 +154,8 @@ are the merge base `acx update` uses to preserve local customization.
 ## Updates never clobber
 
 `update` decides per skill from its drift state: `behind` fast-forwards,
-`drifted` is left alone (those are your local learnings — harvesting them
-upstream lands in M2), and `diverged` gets a file-level 3-way merge (ancestor
+`drifted` is left alone (those are your local learnings — send them upstream
+with `harvest` when ready), and `diverged` gets a file-level 3-way merge (ancestor
 as base) that combines non-overlapping changes and writes git-style conflict
 markers when they overlap, exiting 1 so nothing ships unresolved. Add/delete
 conflicts always keep the side with local edits. After an update the ancestor
