@@ -64,9 +64,8 @@ everything a single binary can do is here.
 go install github.com/navisoft0/shuhari/cmd/shu@latest
 ```
 
-While this repo is private, tell Go to fetch it over authenticated git first:
-`export GOPRIVATE=github.com/navisoft0`. Or build from a clone — the result is
-a single self-contained binary you can hand to teammates directly:
+Or build from a clone — the result is a single self-contained binary you can
+hand to teammates directly:
 
 ```sh
 go build -o shu ./cmd/shu    # Go 1.24+, no other dependencies
