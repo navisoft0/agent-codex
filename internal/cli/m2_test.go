@@ -111,16 +111,16 @@ func TestHarvestPush(t *testing.T) {
 	b, _ := os.ReadFile(install)
 	write(t, install, strings.ReplaceAll(string(b), "alpha", "alpha LEARNED"))
 	out, code = capture(t, func() int {
-		return Run([]string{"harvest", "demo", "--push", "--branch", "acx/harvest-test"})
+		return Run([]string{"harvest", "demo", "--push", "--branch", "shu/harvest-test"})
 	})
 	if code != 0 || !strings.Contains(out, "pushed harvest branch") {
 		t.Fatalf("harvest push: code=%d out=%s", code, out)
 	}
-	show := gitc(t, up, "show", "acx/harvest-test:skills/demo/SKILL.md")
+	show := gitc(t, up, "show", "shu/harvest-test:skills/demo/SKILL.md")
 	if !strings.Contains(show, "alpha LEARNED") {
 		t.Fatalf("upstream branch missing the learning:\n%s", show)
 	}
-	log := gitc(t, up, "log", "-1", "--format=%B", "acx/harvest-test")
+	log := gitc(t, up, "log", "-1", "--format=%B", "shu/harvest-test")
 	if !strings.Contains(log, "harvest local learnings") || !strings.Contains(log, "ancestor") {
 		t.Fatalf("commit message lacks attribution:\n%s", log)
 	}
@@ -146,19 +146,19 @@ func TestPropagatePush(t *testing.T) {
 
 	t.Chdir(up)
 	out, code := capture(t, func() int {
-		return Run([]string{"propagate", "--push", "--branch", "acx/test-update"})
+		return Run([]string{"propagate", "--push", "--branch", "shu/test-update"})
 	})
 	if code != 0 {
 		t.Fatalf("propagate: code=%d out=%s", code, out)
 	}
-	if !strings.Contains(out, "fast-forwarded 1.0.0 -> 1.1.0") || !strings.Contains(out, "pushed acx/test-update") {
+	if !strings.Contains(out, "fast-forwarded 1.0.0 -> 1.1.0") || !strings.Contains(out, "pushed shu/test-update") {
 		t.Fatalf("propagate output:\n%s", out)
 	}
-	show := gitc(t, consumer, "show", "acx/test-update:.claude/skills/demo/SKILL.md")
+	show := gitc(t, consumer, "show", "shu/test-update:.claude/skills/demo/SKILL.md")
 	if !strings.Contains(show, "1.1.0") || !strings.Contains(show, "omega v2") {
 		t.Fatalf("consumer branch not updated:\n%s", show)
 	}
-	lock := gitc(t, consumer, "show", "acx/test-update:skills.lock")
+	lock := gitc(t, consumer, "show", "shu/test-update:skills.lock")
 	if !strings.Contains(lock, "1.1.0") {
 		t.Fatalf("lockfile not updated on branch:\n%s", lock)
 	}
@@ -198,7 +198,7 @@ func TestPropagateEvalGateBlocks(t *testing.T) {
 	if code != 1 || !strings.Contains(out, "eval gate failed") {
 		t.Fatalf("gate should block: code=%d out=%s", code, out)
 	}
-	if _, err := git(consumer, "rev-parse", "--verify", "acx/skills-update"); err == nil {
+	if _, err := git(consumer, "rev-parse", "--verify", "shu/skills-update"); err == nil {
 		t.Fatal("branch must not be pushed when the gate fails")
 	}
 }

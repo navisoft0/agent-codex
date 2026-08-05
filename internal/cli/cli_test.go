@@ -72,7 +72,7 @@ func TestAddStatusDiffLifecycle(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(consumer, "skills.lock")); err != nil {
 		t.Fatalf("lockfile not written: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(consumer, ".agent-codex", "ancestors", "demo", "SKILL.md")); err != nil {
+	if _, err := os.Stat(filepath.Join(consumer, ".shuhari", "ancestors", "demo", "SKILL.md")); err != nil {
 		t.Fatalf("ancestor snapshot not written: %v", err)
 	}
 

@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/evals"
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/evals"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 // skillWorkDir finds a skill's directory in either kind of repo: the working
@@ -44,7 +44,7 @@ func runEval(args []string) int {
 		return 2
 	}
 	if len(pos) != 1 {
-		fmt.Fprintln(os.Stderr, "usage: acx eval <skill> [--scaffold] [--runner <cmd>]")
+		fmt.Fprintln(os.Stderr, "usage: shu eval <skill> [--scaffold] [--runner <cmd>]")
 		return 2
 	}
 	name := pos[0]
@@ -71,7 +71,7 @@ func runEval(args []string) int {
 
 	config := evals.FindConfig(dir)
 	if config == "" {
-		return fail(fmt.Errorf("%s has no eval suite (generate a starter with `acx eval %s --scaffold`)", name, name))
+		return fail(fmt.Errorf("%s has no eval suite (generate a starter with `shu eval %s --scaffold`)", name, name))
 	}
 	runner := evals.DefaultRunner()
 	if *runnerFlag != "" {

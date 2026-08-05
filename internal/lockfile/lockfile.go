@@ -17,11 +17,11 @@ const Name = "skills.lock"
 // AncestorsDir is where full ancestor snapshots live, one subdirectory per
 // skill. Snapshots are committed alongside the lockfile so drift is computable
 // on any checkout without network access.
-const AncestorsDir = ".agent-codex/ancestors"
+const AncestorsDir = ".shuhari/ancestors"
 
 // Entry records one installed skill.
 type Entry struct {
-	// Source is the upstream as given to `acx add`: a git URL or local path.
+	// Source is the upstream as given to `shu add`: a git URL or local path.
 	Source string `json:"source"`
 	// Version is the skill's frontmatter version at sync time, if declared.
 	Version string `json:"version,omitempty"`

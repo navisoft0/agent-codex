@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 // runDiff shows what changed: by default the local working copy against the
@@ -24,7 +24,7 @@ func runDiff(args []string) int {
 		return 2
 	}
 	if len(pos) != 1 {
-		fmt.Fprintln(os.Stderr, "usage: acx diff <skill> [--latest]")
+		fmt.Fprintln(os.Stderr, "usage: shu diff <skill> [--latest]")
 		return 2
 	}
 	name := pos[0]

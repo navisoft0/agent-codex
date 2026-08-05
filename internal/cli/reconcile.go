@@ -41,7 +41,7 @@ type reconcileCluster struct {
 	Suggestion string          `json:"suggestion"`
 }
 
-// runReconcile inspects acx/harvest/* branches in the canonical repo.
+// runReconcile inspects shu/harvest/* branches in the canonical repo.
 func runReconcile(args []string) int {
 	fs := flag.NewFlagSet("reconcile", flag.ContinueOnError)
 	jsonOut := fs.Bool("json", false, "emit machine-readable JSON")
@@ -70,7 +70,7 @@ func runReconcile(args []string) int {
 		return fail(err)
 	}
 	if len(branches) == 0 {
-		fmt.Println("no acx/harvest/* branches found — nothing to reconcile")
+		fmt.Println("no shu/harvest/* branches found — nothing to reconcile")
 		return 0
 	}
 
@@ -154,7 +154,7 @@ func detectBase(root string) string {
 	return "HEAD"
 }
 
-// harvestBranches lists local and remote acx/harvest/* refs, deduplicated by
+// harvestBranches lists local and remote shu/harvest/* refs, deduplicated by
 // their harvest-relative name (remote copy preferred).
 func harvestBranches(root string) ([]string, error) {
 	out, err := git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes")
@@ -164,7 +164,7 @@ func harvestBranches(root string) ([]string, error) {
 	seen := map[string]string{}
 	for _, ref := range strings.Split(out, "\n") {
 		ref = strings.TrimSpace(ref)
-		i := strings.Index(ref, "acx/harvest/")
+		i := strings.Index(ref, "shu/harvest/")
 		if i < 0 || strings.HasSuffix(ref, "/HEAD") {
 			continue
 		}

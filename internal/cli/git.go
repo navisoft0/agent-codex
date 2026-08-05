@@ -30,9 +30,9 @@ func githubCompareURL(remote, branch string) string {
 }
 
 // gitIdentity returns the user.name/user.email visible from dir, with
-// fallbacks so commits made by acx never fail on missing config.
+// fallbacks so commits made by shu never fail on missing config.
 func gitIdentity(dir string) (name, email string) {
-	name, email = "acx", "acx@localhost"
+	name, email = "shu", "shu@localhost"
 	if out, err := git(dir, "config", "--get", "user.name"); err == nil && strings.TrimSpace(out) != "" {
 		name = strings.TrimSpace(out)
 	}

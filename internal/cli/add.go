@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/adapters"
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/hashdir"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/semver"
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/adapters"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/hashdir"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/semver"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 // runAdd installs a skill from an upstream into this repo: copies it to the
@@ -31,7 +31,7 @@ func runAdd(args []string) int {
 		return 2
 	}
 	if len(pos) != 1 || *from == "" {
-		fmt.Fprintln(os.Stderr, "usage: acx add <skill>[@constraint] --from <source> [--to <dir>] [--surfaces <list>] [--pin]")
+		fmt.Fprintln(os.Stderr, "usage: shu add <skill>[@constraint] --from <source> [--to <dir>] [--surfaces <list>] [--pin]")
 		return 2
 	}
 	name, constraint, _ := strings.Cut(pos[0], "@")
@@ -60,7 +60,7 @@ func runAdd(args []string) int {
 		return fail(err)
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "acx: warning: could not refresh upstream, installing from cached copy")
+		fmt.Fprintln(os.Stderr, "shu: warning: could not refresh upstream, installing from cached copy")
 	}
 	src, err := upstream.SkillDir(base, name)
 	if err != nil {

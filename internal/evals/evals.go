@@ -1,5 +1,5 @@
 // Package evals runs a skill's regression suite through a promptfoo-compatible
-// runner. acx never interprets prompts itself — it locates the config, execs
+// runner. shu never interprets prompts itself — it locates the config, execs
 // the runner, and reads back the stats — so any provider promptfoo supports
 // (or any drop-in compatible tool) works.
 package evals
@@ -16,9 +16,9 @@ import (
 )
 
 // EnvRunner overrides the default runner command, split on whitespace.
-const EnvRunner = "ACX_EVAL_RUNNER"
+const EnvRunner = "SHU_EVAL_RUNNER"
 
-// DefaultRunner returns the runner command: $ACX_EVAL_RUNNER if set,
+// DefaultRunner returns the runner command: $SHU_EVAL_RUNNER if set,
 // otherwise promptfoo via npx.
 func DefaultRunner() []string {
 	if v := strings.TrimSpace(os.Getenv(EnvRunner)); v != "" {
@@ -66,7 +66,7 @@ func Run(runner []string, skillDir, config string) (Result, error) {
 	if len(runner) == 0 {
 		return Result{}, errors.New("no eval runner configured")
 	}
-	tmp, err := os.CreateTemp("", "acx-eval-*.json")
+	tmp, err := os.CreateTemp("", "shu-eval-*.json")
 	if err != nil {
 		return Result{}, err
 	}

@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-// Severity levels: "high" findings fail `acx scan` in CI; "warn" findings
+// Severity levels: "high" findings fail `shu scan` in CI; "warn" findings
 // are informational.
 const (
 	High = "high"

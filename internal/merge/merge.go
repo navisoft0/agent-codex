@@ -1,4 +1,4 @@
-// Package merge implements the file-level 3-way merge behind `acx update`:
+// Package merge implements the file-level 3-way merge behind `shu update`:
 // the recorded ancestor snapshot is the base, the working copy is ours, the
 // upstream latest is theirs. Non-overlapping changes combine; overlapping
 // changes are written back with git-style conflict markers, never resolved
@@ -112,7 +112,7 @@ func Dirs(workDir, ancDir, latestDir string) ([]string, error) {
 // on both sides has no ancestor; an empty base gives a full-file conflict.
 func mergeFile(workPath, basePath, latestDir, rel string, haveBase bool) (bool, error) {
 	if !haveBase {
-		tmp, err := os.CreateTemp("", "acx-empty-base-*")
+		tmp, err := os.CreateTemp("", "shu-empty-base-*")
 		if err != nil {
 			return false, err
 		}

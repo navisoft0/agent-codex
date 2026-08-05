@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/hashdir"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/hashdir"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 // runHarvest packages local drift as a reviewable branch against the
@@ -20,13 +20,13 @@ import (
 func runHarvest(args []string) int {
 	fs := flag.NewFlagSet("harvest", flag.ContinueOnError)
 	push := fs.Bool("push", false, "push the harvest branch to the upstream remote")
-	branchFlag := fs.String("branch", "", "branch name (default acx/harvest/<skill>)")
+	branchFlag := fs.String("branch", "", "branch name (default shu/harvest/<skill>)")
 	pos, err := parse(fs, args)
 	if err != nil {
 		return 2
 	}
 	if len(pos) != 1 {
-		fmt.Fprintln(os.Stderr, "usage: acx harvest <skill> [--push] [--branch <name>]")
+		fmt.Fprintln(os.Stderr, "usage: shu harvest <skill> [--push] [--branch <name>]")
 		return 2
 	}
 	name := pos[0]
@@ -63,7 +63,7 @@ func runHarvest(args []string) int {
 		return 0
 	}
 
-	clone, err := os.MkdirTemp("", "acx-harvest-"+name+"-")
+	clone, err := os.MkdirTemp("", "shu-harvest-"+name+"-")
 	if err != nil {
 		return fail(err)
 	}
@@ -74,7 +74,7 @@ func runHarvest(args []string) int {
 
 	branch := *branchFlag
 	if branch == "" {
-		branch = "acx/harvest/" + name
+		branch = "shu/harvest/" + name
 	}
 	if _, err := git(clone, "checkout", "-b", branch); err != nil {
 		return fail(err)
@@ -94,7 +94,7 @@ func runHarvest(args []string) int {
 		origin = out
 	}
 	msg := fmt.Sprintf("skills/%s: harvest local learnings from %s\n\n"+
-		"Drift captured by acx relative to synced ancestor %s (version %s).\n"+
+		"Drift captured by shu relative to synced ancestor %s (version %s).\n"+
 		"Source repo: %s\n",
 		name, consumer, short(ancestor), versionOr(entry.Version, "unversioned"),
 		versionOr(firstLine(origin), root))

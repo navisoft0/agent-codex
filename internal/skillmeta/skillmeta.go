@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Meta is the subset of SKILL.md frontmatter acx cares about.
+// Meta is the subset of SKILL.md frontmatter shu cares about.
 type Meta struct {
 	Name        string
 	Description string

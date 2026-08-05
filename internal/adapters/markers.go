@@ -11,8 +11,8 @@ import (
 // UpsertSection replaces (or appends) the managed section for a skill inside
 // a shared markdown file. Everything outside the markers is left untouched.
 func UpsertSection(path, skill, content string) error {
-	begin := fmt.Sprintf("<!-- acx:skill:%s:begin -->", skill)
-	end := fmt.Sprintf("<!-- acx:skill:%s:end -->", skill)
+	begin := fmt.Sprintf("<!-- shuhari:skill:%s:begin -->", skill)
+	end := fmt.Sprintf("<!-- shuhari:skill:%s:end -->", skill)
 	section := begin + "\n" + strings.TrimRight(content, "\n") + "\n" + end
 
 	b, err := os.ReadFile(path)

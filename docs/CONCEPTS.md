@@ -1,4 +1,4 @@
-# acx, explained in plain English
+# shu, explained in plain English
 
 No jargon assumed. Ten minutes, and the rest of the docs will make sense.
 
@@ -20,11 +20,11 @@ lessons are scattered across folders where they help exactly one person.
 Pick one git repo to be **the library** — the official home of your skills.
 (An ordinary repo; a folder per skill. Nothing special is installed in it.)
 
-Then `acx`, a small command-line tool on each person's machine, manages the
+Then `shu`, a small command-line tool on each person's machine, manages the
 relationship between that library and every copy taken from it. The key
-trick: **when acx installs a skill into a project, it also records a receipt
+trick: **when shu installs a skill into a project, it also records a receipt
 — exactly what was received, from where, at which version.** Everything else
-follows from that receipt, because acx can always compare three things:
+follows from that receipt, because shu can always compare three things:
 
 1. what the library has **now**
 2. what this project **originally received** (the receipt)
@@ -42,53 +42,53 @@ Comparing those three, every installed skill is in exactly one state:
 | `diverged` | Both changed. An update will need to merge the two. |
 | `missing` | The receipt says you have this skill, but the folder is gone. |
 
-`acx status` prints this for every skill in a project. `drifted` is not an
+`shu status` prints this for every skill in a project. `drifted` is not an
 error — customizing your copy is normal and supported forever.
 
 ## The loop
 
-**Pull** — `acx add monday --from github.com/you/skills` installs a skill and
+**Pull** — `shu add monday --from github.com/you/skills` installs a skill and
 writes the receipt. Your existing GitHub access controls who can do this.
 
-**Update** — `acx update` brings in the library's latest. Because of the
-receipt, acx knows which lines are *your* edits and which are *the update's*:
+**Update** — `shu update` brings in the library's latest. Because of the
+receipt, shu knows which lines are *your* edits and which are *the update's*:
 non-overlapping changes are combined automatically; if both sides touched the
-same line, acx stops, marks that one spot with both versions, and lets a
+same line, shu stops, marks that one spot with both versions, and lets a
 human choose. It never guesses, and it never throws your edits away.
 
-**Contribute** — `acx harvest monday` packages your local edits as a proposed
+**Contribute** — `shu harvest monday` packages your local edits as a proposed
 change to the library — an ordinary pull request, labeled with who made it
 and what it's based on. The maintainer reviews it like any other change;
 nothing enters the library without review. If several people propose
-overlapping fixes, `acx reconcile` groups them so the maintainer merges the
+overlapping fixes, `shu reconcile` groups them so the maintainer merges the
 lesson once.
 
-**Fan out** — from the library, `acx propagate` pushes a new release to every
+**Fan out** — from the library, `shu propagate` pushes a new release to every
 listed team repo as a reviewable update, running each skill's test cases
 first (skills can carry example tasks that prove they work). A failing update
 simply isn't proposed.
 
 ## Safety nets
 
-- `acx verify` — proves a project's copies match the receipts exactly (catches
+- `shu verify` — proves a project's copies match the receipts exactly (catches
   tampering; run it in CI).
-- `acx scan` — checks incoming skill content for red flags: hidden
+- `shu scan` — checks incoming skill content for red flags: hidden
   instructions like "don't tell the user," scripts that download and run
   code. Runs automatically on every install/update.
-- `acx audit` — the history: who changed which skill, when.
-- Pinning — `acx add monday@1.2.0` (or `--pin`) freezes a copy; updates
+- `shu audit` — the history: who changed which skill, when.
+- Pinning — `shu add monday@1.2.0` (or `--pin`) freezes a copy; updates
   report "held back" instead of moving it until you say so.
-- Rolling back — everything acx does is plain files committed to *your* repo,
+- Rolling back — everything shu does is plain files committed to *your* repo,
   so undoing an update is a normal git revert, and automated updates arrive
   as pull requests you can simply decline.
 
 ## What runs where
 
 - **The library repo:** just your skill folders (plus, optionally, a list of
-  team repos and a GitHub automation for fan-out). No acx state lives here.
+  team repos and a GitHub automation for fan-out). No shu state lives here.
 - **Each project:** the installed copies, the receipt file (`skills.lock`),
-  and the snapshots (`.agent-codex/`) — all committed, all plain files.
-- **acx itself:** one binary on laptops and in CI. No server, no accounts.
+  and the snapshots (`.shuhari/`) — all committed, all plain files.
+- **shu itself:** one binary on laptops and in CI. No server, no accounts.
   Remove it and every file remains readable.
 
 ## Mini-glossary

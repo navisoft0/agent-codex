@@ -9,11 +9,11 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/navisoft0/agent-codex/internal/drift"
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/hashdir"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/drift"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/hashdir"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 type statusRow struct {
@@ -156,7 +156,7 @@ func fleetStatus(root string, jsonOut, offline bool) int {
 	entries := make([]fleetStatusEntry, 0, len(m.Repos))
 	for _, src := range m.Repos {
 		entry := fleetStatusEntry{Repo: src}
-		clone, err := os.MkdirTemp("", "acx-fleet-")
+		clone, err := os.MkdirTemp("", "shu-fleet-")
 		if err != nil {
 			return fail(err)
 		}

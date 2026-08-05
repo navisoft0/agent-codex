@@ -26,7 +26,7 @@ func Resolve(source string, refresh bool) (string, error) {
 		return "", err
 	}
 	sum := sha256.Sum256([]byte(source))
-	dir := filepath.Join(ucd, "agent-codex", hex.EncodeToString(sum[:])[:12])
+	dir := filepath.Join(ucd, "shuhari", hex.EncodeToString(sum[:])[:12])
 
 	if _, err := os.Stat(filepath.Join(dir, ".git")); err != nil {
 		if err := os.MkdirAll(filepath.Dir(dir), 0o755); err != nil {

@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
-# Guided tour of acx: plays out the full lifecycle in a throwaway sandbox.
+# Guided tour of shu: plays out the full lifecycle in a throwaway sandbox.
 #
-#   git clone https://github.com/navisoft0/agent-codex
-#   cd agent-codex
+#   git clone https://github.com/navisoft0/shuhari
+#   cd shuhari
 #   bash docs/demo.sh
 #
-# Needs: git, and either Go 1.24+ or a prebuilt ./acx binary next to go.mod.
+# Needs: git, and either Go 1.24+ or a prebuilt ./shu binary next to go.mod.
 set -euo pipefail
 
 say()  { printf '\n\033[1;36m▸ %s\033[0m\n' "$*"; }
 run()  { printf '\033[1;33m$ %s\033[0m\n' "$*"; "$@" || true; }
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-ACX="$repo_root/acx"
-if [ ! -x "$ACX" ]; then
-  say "Building acx (one-time)"
-  (cd "$repo_root" && go build -o acx ./cmd/acx)
+SHU="$repo_root/shu"
+if [ ! -x "$SHU" ]; then
+  say "Building shu (one-time)"
+  (cd "$repo_root" && go build -o shu ./cmd/shu)
 fi
 
-sandbox="$(mktemp -d -t acx-demo-XXXXXX)"
+sandbox="$(mktemp -d -t shu-demo-XXXXXX)"
 trap 'rm -rf "$sandbox"' EXIT
 library="$sandbox/library"
 project="$sandbox/checkout-service"
@@ -51,13 +51,13 @@ echo "library ready at $library"
 
 say "ACT 2 — The checkout team installs the playbook into their project"
 mkdir -p "$project" && cd "$project"
-run "$ACX" add deploy-checklist --from "$library" --surfaces claude-code,agents-md
-run "$ACX" status
+run "$SHU" add deploy-checklist --from "$library" --surfaces claude-code,agents-md
+run "$SHU" status
 
 say "ACT 3 — The team adds a local nuance (their warehouse-scanner rule)"
 sed -i.bak 's/Notify the release channel before deploying./Notify the release channel and the warehouse floor manager before deploying./' \
   .claude/skills/deploy-checklist/SKILL.md && rm -f .claude/skills/deploy-checklist/SKILL.md.bak
-run "$ACX" status
+run "$SHU" status
 echo "(drifted = customized locally; expected state, not an error)"
 
 say "ACT 4 — Headquarters ships v1.1.0, improving a DIFFERENT section"
@@ -65,7 +65,7 @@ sed -i.bak -e 's/version: 1.0.0/version: 1.1.0/' \
   -e 's/Revert the release tag and redeploy the previous version./Revert the release tag, redeploy the previous version, and confirm health checks pass./' \
   "$library/skills/deploy-checklist/SKILL.md" && rm -f "$library/skills/deploy-checklist/SKILL.md.bak"
 gitc "$library" add -A && gitc "$library" commit -qm "deploy-checklist v1.1.0"
-run "$ACX" update
+run "$SHU" update
 echo
 echo "--- the merged file keeps BOTH the local nuance and the new rollback text ---"
 grep -n "warehouse floor manager\|confirm health checks" .claude/skills/deploy-checklist/SKILL.md
@@ -75,9 +75,9 @@ sed -i.bak -e 's/version: 1.1.0/version: 1.2.0/' \
   -e 's/Notify the release channel before deploying./Notify the on-call engineer before deploying./' \
   "$library/skills/deploy-checklist/SKILL.md" && rm -f "$library/skills/deploy-checklist/SKILL.md.bak"
 gitc "$library" add -A && gitc "$library" commit -qm "deploy-checklist v1.2.0"
-run "$ACX" update
+run "$SHU" update
 echo
-echo "--- acx refused to guess: both versions are marked in the file ---"
+echo "--- shu refused to guess: both versions are marked in the file ---"
 sed -n '/<<<<<<</,/>>>>>>>/p' .claude/skills/deploy-checklist/SKILL.md
 
 say "ACT 6 — A human blends the two in one edit, and the decision sticks"
@@ -89,23 +89,23 @@ t = re.sub(r"<<<<<<< local\n.*?=======\n.*?>>>>>>> latest",
            p.read_text(), flags=re.S)
 p.write_text(t)
 EOF
-run "$ACX" status
+run "$SHU" status
 echo "(back to plain 'drifted': the blend is now just their local nuance on top of v1.2.0)"
 
 say "ACT 7 — The nuance turns out useful company-wide: send it upstream"
-run "$ACX" harvest deploy-checklist --push --branch acx/harvest/deploy-checklist
+run "$SHU" harvest deploy-checklist --push --branch shu/harvest/deploy-checklist
 echo
 echo "--- the proposal branch in the library, with attribution ---"
-gitc "$library" log -1 --format='%s%n%b' acx/harvest/deploy-checklist
+gitc "$library" log -1 --format='%s%n%b' shu/harvest/deploy-checklist
 
 say "ACT 8 — The safety net, in one command each"
-run "$ACX" verify
+run "$SHU" verify
 echo "(working=modified is verify doing its job: the team's copy differs from the"
 echo " official content on record — in CI this catches tampering; here it's the nuance)"
 echo
-run "$ACX" scan
+run "$SHU" scan
 echo
-echo "(acx audit would show who changed which playbook, when — it reads the project's"
+echo "(shu audit would show who changed which playbook, when — it reads the project's"
 echo " git history, which this throwaway sandbox project doesn't have)"
 
 say "Demo complete — sandbox was $sandbox (auto-removed)"

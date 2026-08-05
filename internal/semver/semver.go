@@ -1,4 +1,4 @@
-// Package semver implements the minimal version arithmetic acx needs for
+// Package semver implements the minimal version arithmetic shu needs for
 // skill constraints: exact matches and caret ranges over the behavioral
 // semver convention (MAJOR = changed behavior, MINOR = additive, PATCH =
 // clarification). Content pins (sha256:...) are compared by hash by the

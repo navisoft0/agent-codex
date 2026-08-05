@@ -9,9 +9,9 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/hashdir"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/hashdir"
+	"github.com/navisoft0/shuhari/internal/lockfile"
 )
 
 type verifyRow struct {

@@ -10,11 +10,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
 )
 
-// Primary is the surface `acx add` installs into. It is the working copy
+// Primary is the surface `shu add` installs into. It is the working copy
 // itself — the thing drift is measured on — not a generated projection.
 const Primary = "claude-code"
 
@@ -96,7 +96,7 @@ func (cursorAdapter) Project(c Context) (string, error) {
 }
 
 // markerAdapter maintains a managed section inside a shared instructions file
-// (AGENTS.md or CLAUDE.md), delimited by acx markers so re-projection
+// (AGENTS.md or CLAUDE.md), delimited by shu markers so re-projection
 // replaces exactly its own section and nothing else.
 type markerAdapter struct {
 	file string

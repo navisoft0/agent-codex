@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
 )
 
 func skillDir(t *testing.T, body string) string {
@@ -90,7 +90,7 @@ func TestMarkerAdapterUpsert(t *testing.T) {
 	if !strings.Contains(got, "hand-written intro") {
 		t.Error("existing content was clobbered")
 	}
-	if strings.Count(got, "<!-- acx:skill:demo:begin -->") != 1 {
+	if strings.Count(got, "<!-- shuhari:skill:demo:begin -->") != 1 {
 		t.Errorf("expected exactly one managed section:\n%s", got)
 	}
 	if !strings.Contains(got, "Second body.") || strings.Contains(got, "First body.") {

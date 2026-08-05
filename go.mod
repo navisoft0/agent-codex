@@ -1,3 +1,3 @@
-module github.com/navisoft0/agent-codex
+module github.com/navisoft0/shuhari
 
 go 1.24

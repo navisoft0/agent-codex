@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/navisoft0/agent-codex/internal/adapters"
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/adapters"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
 )
 
 // projectSkill renders one skill's working copy into every configured
@@ -85,7 +85,7 @@ func runProject(args []string) int {
 		}
 	}
 	if !any {
-		fmt.Println("nothing to project (no non-primary surfaces configured; see `acx add --surfaces`)")
+		fmt.Println("nothing to project (no non-primary surfaces configured; see `shu add --surfaces`)")
 	}
 	return 0
 }

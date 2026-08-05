@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/evals"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/evals"
+	"github.com/navisoft0/shuhari/internal/lockfile"
 )
 
 // fleetManifest lists the consuming repos an upstream propagates to.
@@ -39,7 +39,7 @@ func loadFleet(root, manifestPath string) (fleetManifest, error) {
 func runPropagate(args []string) int {
 	fs := flag.NewFlagSet("propagate", flag.ContinueOnError)
 	push := fs.Bool("push", false, "push each prepared branch to its repo's remote")
-	branch := fs.String("branch", "acx/skills-update", "branch name for prepared updates")
+	branch := fs.String("branch", "shu/skills-update", "branch name for prepared updates")
 	manifestPath := fs.String("manifest", "fleet.json", "fleet manifest path relative to repo root")
 	runnerFlag := fs.String("runner", "", "eval runner for the gate (default: $"+evals.EnvRunner+"; gate skipped if unset)")
 	if _, err := parse(fs, args); err != nil {
@@ -67,12 +67,12 @@ func runPropagate(args []string) int {
 	exit := 0
 	for _, src := range m.Repos {
 		fmt.Printf("=== %s ===\n", src)
-		clone, err := os.MkdirTemp("", "acx-propagate-")
+		clone, err := os.MkdirTemp("", "shu-propagate-")
 		if err != nil {
 			return fail(err)
 		}
 		if out, cerr := git(root, "clone", src, clone); cerr != nil {
-			fmt.Fprintf(os.Stderr, "acx: clone failed, skipping: %v\n%s", cerr, out)
+			fmt.Fprintf(os.Stderr, "shu: clone failed, skipping: %v\n%s", cerr, out)
 			os.RemoveAll(clone)
 			exit = 1
 			continue
@@ -88,7 +88,7 @@ func runPropagate(args []string) int {
 		}
 		if code != 0 {
 			exit = 1
-			fmt.Printf("merge conflicts — needs a manual `acx update` in this repo; working clone kept at %s\n", clone)
+			fmt.Printf("merge conflicts — needs a manual `shu update` in this repo; working clone kept at %s\n", clone)
 			continue
 		}
 
@@ -104,7 +104,7 @@ func runPropagate(args []string) int {
 			return fail(err)
 		}
 		uname, uemail := gitIdentity(root)
-		msg := "Update skills to latest upstream\n\nPrepared by acx propagate; drift report and merge were clean" +
+		msg := "Update skills to latest upstream\n\nPrepared by shu propagate; drift report and merge were clean" +
 			gateNote(runner) + ".\n"
 		if _, err := commitAll(clone, uname, uemail, msg); err != nil {
 			return fail(err)

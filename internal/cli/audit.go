@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/navisoft0/agent-codex/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/lockfile"
 )
 
 type auditFile struct {

@@ -10,27 +10,27 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/navisoft0/agent-codex/internal/drift"
-	"github.com/navisoft0/agent-codex/internal/fsutil"
-	"github.com/navisoft0/agent-codex/internal/hashdir"
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/merge"
-	"github.com/navisoft0/agent-codex/internal/semver"
-	"github.com/navisoft0/agent-codex/internal/skillmeta"
-	"github.com/navisoft0/agent-codex/internal/upstream"
+	"github.com/navisoft0/shuhari/internal/drift"
+	"github.com/navisoft0/shuhari/internal/fsutil"
+	"github.com/navisoft0/shuhari/internal/hashdir"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/merge"
+	"github.com/navisoft0/shuhari/internal/semver"
+	"github.com/navisoft0/shuhari/internal/skillmeta"
+	"github.com/navisoft0/shuhari/internal/upstream"
 )
 
 // EnvAIMerge names a command that reads a conflict-marked file on stdin and
 // writes a proposed resolution to stdout (e.g. a claude or llm CLI
 // invocation). Proposals land next to the conflicted file as <file>.proposal
-// — acx never applies them itself; the human merges the proposal or not.
-const EnvAIMerge = "ACX_AI_MERGE_CMD"
+// — shu never applies them itself; the human merges the proposal or not.
+const EnvAIMerge = "SHU_AI_MERGE_CMD"
 
 // proposeResolutions runs the configured proposer over each conflicted file.
 func proposeResolutions(wdir, skill string, conflicts []string) {
 	cmdline := strings.Fields(os.Getenv(EnvAIMerge))
 	if len(cmdline) == 0 {
-		fmt.Fprintf(os.Stderr, "acx: --ai-merge: $%s is not set; point it at a proposer command "+
+		fmt.Fprintf(os.Stderr, "shu: --ai-merge: $%s is not set; point it at a proposer command "+
 			"(reads the conflicted file on stdin, writes a proposal to stdout)\n", EnvAIMerge)
 		return
 	}
@@ -38,18 +38,18 @@ func proposeResolutions(wdir, skill string, conflicts []string) {
 		path := filepath.Join(wdir, rel)
 		content, err := os.ReadFile(path)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "acx: --ai-merge: %v\n", err)
+			fmt.Fprintf(os.Stderr, "shu: --ai-merge: %v\n", err)
 			continue
 		}
 		cmd := exec.Command(cmdline[0], cmdline[1:]...)
 		cmd.Stdin = bytes.NewReader(content)
 		out, err := cmd.Output()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "acx: --ai-merge: proposer failed for %s: %v\n", rel, err)
+			fmt.Fprintf(os.Stderr, "shu: --ai-merge: proposer failed for %s: %v\n", rel, err)
 			continue
 		}
 		if err := os.WriteFile(path+".proposal", out, 0o644); err != nil {
-			fmt.Fprintf(os.Stderr, "acx: --ai-merge: %v\n", err)
+			fmt.Fprintf(os.Stderr, "shu: --ai-merge: %v\n", err)
 			continue
 		}
 		fmt.Printf("%s: AI proposal written to %s.proposal — review and apply manually\n", skill, rel)
@@ -111,7 +111,7 @@ func updateAt(root string, pos []string, aiMerge bool) int {
 			return fail(rerr)
 		}
 		if rerr != nil {
-			fmt.Fprintf(os.Stderr, "acx: warning: %s: upstream refresh failed, using cached copy\n", name)
+			fmt.Fprintf(os.Stderr, "shu: warning: %s: upstream refresh failed, using cached copy\n", name)
 		}
 		sdir, err := upstream.SkillDir(base, name)
 		if err != nil {
@@ -167,7 +167,7 @@ func updateAt(root string, pos []string, aiMerge bool) int {
 			fmt.Printf("%s: aligned, nothing to do\n", name)
 			continue
 		case drift.Drifted:
-			fmt.Printf("%s: local edits only, nothing incoming (kept; `acx harvest` lands in M2)\n", name)
+			fmt.Printf("%s: local edits only, nothing incoming (kept; `shu harvest` lands in M2)\n", name)
 			continue
 		case drift.Missing:
 			if err := fsutil.CopyDir(sdir, wdir); err != nil {

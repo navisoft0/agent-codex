@@ -11,14 +11,14 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/navisoft0/agent-codex/internal/lockfile"
-	"github.com/navisoft0/agent-codex/internal/scan"
+	"github.com/navisoft0/shuhari/internal/lockfile"
+	"github.com/navisoft0/shuhari/internal/scan"
 )
 
 // EnvScanCmd names an external scanner run in addition to the built-in
 // heuristics (e.g. a Snyk or custom-rules invocation). It receives the skill
 // directory as its argument; a non-zero exit is reported as a high finding.
-const EnvScanCmd = "ACX_SCAN_CMD"
+const EnvScanCmd = "SHU_SCAN_CMD"
 
 type scanRow struct {
 	Skill    string         `json:"skill"`
@@ -142,7 +142,7 @@ func scanNotice(name, dir string) {
 	if err != nil || len(findings) == 0 {
 		return
 	}
-	fmt.Fprintf(os.Stderr, "acx: scan: %s has %d finding(s), %d high — run `acx scan %s` for details\n",
+	fmt.Fprintf(os.Stderr, "shu: scan: %s has %d finding(s), %d high — run `shu scan %s` for details\n",
 		name, len(findings), scan.HighCount(findings), name)
 }
 

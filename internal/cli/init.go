@@ -9,7 +9,7 @@ import (
 
 const exampleSkillMD = `---
 name: example-skill
-description: Example skill scaffolded by acx init. Replace this description with when-to-use guidance so agents trigger it correctly.
+description: Example skill scaffolded by shu init. Replace this description with when-to-use guidance so agents trigger it correctly.
 version: 0.1.0
 ---
 
@@ -59,6 +59,6 @@ func runInit(args []string) int {
 	fmt.Println("scaffolded canonical upstream:")
 	fmt.Println("  skills/example-skill/SKILL.md")
 	fmt.Println("  skills/example-skill/evals/evals.yaml")
-	fmt.Println("next: rename example-skill, commit, and `acx add <skill> --from <this repo>` in a consuming repo")
+	fmt.Println("next: rename example-skill, commit, and `shu add <skill> --from <this repo>` in a consuming repo")
 	return 0
 }

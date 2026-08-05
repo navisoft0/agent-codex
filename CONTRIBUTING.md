@@ -1,11 +1,11 @@
-# Contributing to agent-codex
+# Contributing to shuhari
 
-Thanks for helping build `acx`.
+Thanks for helping build `shu`.
 
 ## Building and testing
 
 ```sh
-go build -o acx ./cmd/acx   # Go 1.24+, no other dependencies
+go build -o shu ./cmd/shu   # Go 1.24+, no other dependencies
 go test ./...               # full suite; needs git on PATH
 gofmt -l . && go vet ./...  # both must come back clean
 ```
