@@ -21,7 +21,4 @@
   <text x="128" y="140" text-anchor="middle"
         font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace"
         font-weight="700" font-size="56" letter-spacing="2" fill="#f8f5ef">shu</text>
-  <text x="128" y="176" text-anchor="middle"
-        font-family="'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', serif"
-        font-size="21" letter-spacing="6" fill="#8494a8">守破離</text>
 </svg>
