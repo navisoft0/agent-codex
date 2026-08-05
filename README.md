@@ -40,16 +40,6 @@ plus the git repos you already have. New to all this? Read
 **[docs/CONCEPTS.md](docs/CONCEPTS.md)** — the plain-English tour — or run the
 five-minute sandbox demo: `bash docs/demo.sh`.
 
-## Why "shuhari"?
-
-**Shu-Ha-Ri** (守破離) is the martial-arts description of how a form is
-mastered: **shu** — follow the canonical form exactly; **ha** — adapt it to
-your own circumstances; **ri** — transcend it and give new form back to the
-school. That is precisely this tool's loop: stay `aligned` with the library
-(*shu*), customize your copy locally (*ha*, what we call `drifted`), and
-`harvest` your improvements back into the canon (*ri*). The binary is `shu` —
-where every practitioner starts.
-
 ## The design in 90 seconds (for engineers)
 
 shu treats one canonical skills repo as *upstream* and manages the loop
@@ -62,8 +52,7 @@ engine: version constraints and content-hash pins, eval-gated fleet
 propagation (Renovate-style update PRs that must pass each skill's promptfoo
 suite), harvest/reconcile for the contribution-back direction, and a
 governance layer (verify, scan, audit). Everything ships in the repos as
-plain files; every mutation is a git commit or a PR. Full design rationale:
-[PLAN.md](PLAN.md) (the original strategy document — reads like one).
+plain files; every mutation is a git commit or a PR.
 
 **Status: v0.1.0 — the complete planned CLI surface, working.** What remains
 is the hosted control plane (approval workflows, signing, dashboards);
@@ -223,8 +212,8 @@ internal/skillmeta/ SKILL.md frontmatter parsing
 
 ## Roadmap
 
-The CLI surface from [PLAN.md](PLAN.md) §5 is fully implemented and tagged
-v0.1.0. Known thin spots headed for v0.2: rollback/install of historical
+The full planned CLI surface is implemented and tagged v0.1.0. Known thin
+spots headed for v0.2: rollback/install of historical
 versions from the library, marking drift as intentional, a `list` command for
 browsing a library, block-level markdown merge, configurable library layouts,
 and prebuilt release binaries (brew / curl installer). Beyond that sits the
