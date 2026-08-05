@@ -14,7 +14,7 @@ import (
 // -ldflags "-X github.com/navisoft0/shuhari/internal/cli.Version=vX.Y.Z".
 var Version = "v0.1.0"
 
-const usage = `shu — state management for agent skills (project shuhari 守破離)
+const usage = `shu — state management for agent skills
 
 Usage:
   shu init                          Scaffold a canonical upstream skills repo
