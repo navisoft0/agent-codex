@@ -1,4 +1,4 @@
-// Package cli implements the acx command surface (M0: init, add, status, diff).
+// Package cli implements the acx command surface.
 package cli
 
 import (
@@ -9,6 +9,10 @@ import (
 
 	"github.com/navisoft0/agent-codex/internal/lockfile"
 )
+
+// Version is stamped into release builds via
+// -ldflags "-X github.com/navisoft0/agent-codex/internal/cli.Version=vX.Y.Z".
+var Version = "v0.1.0"
 
 const usage = `acx — agent-skills sync & governance CLI
 
@@ -70,6 +74,9 @@ func Run(args []string) int {
 		return runScan(args[1:])
 	case "audit":
 		return runAudit(args[1:])
+	case "version", "--version", "-v":
+		fmt.Println("acx", Version)
+		return 0
 	case "help", "-h", "--help":
 		fmt.Print(usage)
 		return 0

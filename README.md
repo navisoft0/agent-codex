@@ -1,4 +1,16 @@
-# agent-codex
+<p align="center">
+  <img src="assets/logo.svg" width="128" alt="acx logo">
+</p>
+
+<h1 align="center">agent-codex</h1>
+
+<p align="center"><b>acx — state management for agent skills</b></p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/go-1.24+-00ADD8.svg" alt="Go 1.24+">
+  <a href=".github/workflows/ci.yml"><img src="https://github.com/navisoft0/agent-codex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
 `acx` is a CLI for syncing and governing AI agent skills across repos and agent
 surfaces. It is not a registry and not a marketplace: it treats one canonical
@@ -18,8 +30,19 @@ org dashboards) — everything a single binary can do is here.
 ## Install
 
 ```sh
-go build -o acx ./cmd/acx    # Go 1.24+
+go install github.com/navisoft0/agent-codex/cmd/acx@latest
 ```
+
+While this repo is private, tell Go to fetch it over authenticated git first:
+`export GOPRIVATE=github.com/navisoft0`. Or build from a clone — the result is
+a single self-contained binary you can hand to teammates directly:
+
+```sh
+go build -o acx ./cmd/acx    # Go 1.24+, no other dependencies
+```
+
+New here? `bash docs/demo.sh` plays the whole lifecycle out in a throwaway
+sandbox in about five minutes.
 
 ## Quickstart
 
@@ -161,8 +184,14 @@ internal/skillmeta/ SKILL.md frontmatter parsing
 
 ## Roadmap
 
-The CLI surface from [PLAN.md](PLAN.md) §5 is fully implemented. What remains
-is the phase-2 control plane: hosted approval workflows, sigstore
-signing/provenance, org dashboards over `status --fleet --json`, and
-commercial packaging — plus dogfooding against a real fleet before v0.1 is
-tagged.
+The CLI surface from [PLAN.md](PLAN.md) §5 is fully implemented and tagged
+v0.1.0. Known thin spots headed for v0.2: rollback/install of historical
+versions from the library, marking drift as intentional, a `list` command for
+browsing a library, block-level markdown merge, configurable library layouts,
+and prebuilt release binaries (brew / curl installer). Beyond that sits the
+phase-2 control plane: hosted approval workflows, signing/provenance, and org
+dashboards over `status --fleet --json`.
+
+## License
+
+[MIT](LICENSE). Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
